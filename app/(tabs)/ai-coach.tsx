@@ -4,7 +4,6 @@ import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { PreferenceForm, WorkoutPreferences } from '@/components/ai/PreferenceForm';
 import WorkoutPlanDisplay from '@/components/ai/WorkoutPlanDisplay';
-import { AIProviderManager } from '@/services/AIProviderManager';
 
 export default function AICoachScreen() {
   const [loading, setLoading] = useState(false);
@@ -14,17 +13,21 @@ export default function AICoachScreen() {
     setLoading(true);
     setWorkoutPlan(null);
     try {
-      const aiManager = new AIProviderManager();
-      const userContext = {
-        userId: '123',
-        fitnessLevel: preferences.fitnessLevel,
-        goals: [preferences.goals],
-        limitations: 'None',
-      };
-      const plan = await aiManager.generateWorkoutPlan(userContext, {
-        duration: parseInt(preferences.duration, 10),
-        equipment: ['dumbbells', 'bench'],
+      const response = await fetch('/api/generate-workout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fitnessLevel: preferences.fitnessLevel,
+          goals: preferences.goals,
+          duration: parseInt(preferences.duration, 10),
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const plan = await response.json();
       setWorkoutPlan(plan);
     } catch (error) {
       console.error('Failed to generate workout plan:', error);

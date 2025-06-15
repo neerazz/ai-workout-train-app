@@ -1,13 +1,16 @@
+import 'dotenv/config';
+import { WorkoutPreferences } from './promptBuilder';
+import { OpenAIProvider } from './providers/OpenAIProvider';
+import { GeminiProvider } from './providers/GeminiProvider';
+import { PerplexityProvider } from './providers/PerplexityProvider';
+
 export interface AIProvider {
-  generateResponse(prompt: string): Promise<string>;
+  generateWorkoutPlan(prefs: WorkoutPreferences): Promise<string>;
 }
 
-// MOCK IMPLEMENTATION of providers until real APIs are integrated
+// Fallback mock provider if no API keys are configured
 class MockAIProvider implements AIProvider {
-  async generateResponse(prompt: string): Promise<string> {
-    console.log('Generating MOCK AI Response for prompt:', prompt);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
+  async generateWorkoutPlan(): Promise<string> {
     const mockPlan = {
       warmUp: [
         { name: 'Jumping Jacks', duration: '2 minutes' },
@@ -27,10 +30,6 @@ class MockAIProvider implements AIProvider {
   }
 }
 
-class OpenAIProvider extends MockAIProvider {}
-class GeminiProvider extends MockAIProvider {}
-class PerplexityProvider extends MockAIProvider {}
-
 export class AIProviderManager {
   private providers: Record<string, AIProvider>;
 
@@ -42,24 +41,28 @@ export class AIProviderManager {
     };
   }
 
-  private buildPrompt(userContext: any, preferences: any) {
-    return `Generate a workout plan for ${JSON.stringify({ userContext, preferences })}`;
-  }
-
   async generateWorkoutPlan(
     userContext: any,
-    preferences: any,
+    preferences: WorkoutPreferences,
     provider: 'openai' | 'gemini' | 'perplexity' = 'openai'
   ) {
-    const prompt = this.buildPrompt(userContext, preferences);
-    const response = await this.providers[provider].generateResponse(prompt);
-    if (response) {
-      try {
-        return JSON.parse(response);
-      } catch (e) {
-        console.error('Failed to parse AI response', e);
-      }
+    const providerInstance = this.providers[provider] ?? new MockAIProvider();
+    const merged = { ...preferences };
+    const promptPrefs = {
+      fitnessLevel: merged.fitnessLevel,
+      goals: Array.isArray(merged.goals) ? merged.goals : [merged.goals],
+      workoutLocation: merged.workoutLocation,
+      daysPerWeek: merged.daysPerWeek,
+      duration: merged.duration,
+    } as WorkoutPreferences;
+
+    const response = await providerInstance.generateWorkoutPlan(promptPrefs);
+
+    try {
+      return JSON.parse(response);
+    } catch {
+      console.error('Failed to parse AI response');
+      return null;
     }
-    return null;
   }
 }
