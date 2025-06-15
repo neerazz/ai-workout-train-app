@@ -1,21 +1,33 @@
 import { Calendar } from 'react-native-calendars';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Alert } from 'react-native';
 import { useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function CalendarScreen() {
-  const [markedDates, setMarkedDates] = useState<{[date: string]: any}>({});
+  const [markedDates, setMarkedDates] = useState<{ [date: string]: any }>({});
 
   const handleDayPress = (day: any) => {
-    const dateStr = day.dateString;
-    setMarkedDates((prev) => ({
-      ...prev,
-      [dateStr]: {
-        selected: true,
-        marked: true,
-        selectedColor: '#007AFF',
-      },
-    }));
+    Alert.alert(
+      'Schedule Workout',
+      `Do you want to schedule a new workout on ${day.dateString}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Schedule',
+          onPress: () => {
+            setMarkedDates((prev) => ({
+              ...prev,
+              [day.dateString]: {
+                periods: [
+                  { startingDay: true, endingDay: true, color: '#007AFF' },
+                ],
+              },
+            }));
+            console.log(`Workout "scheduled" for ${day.dateString}`);
+          },
+        },
+      ]
+    );
   };
 
   return (
