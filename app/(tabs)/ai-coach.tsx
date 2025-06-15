@@ -1,29 +1,51 @@
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { Alert, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import PreferenceForm from '@/components/ai/PreferenceForm';
+import { ThemedText } from '@/components/ThemedText';
+import { PreferenceForm, WorkoutPreferences } from '@/components/ai/PreferenceForm';
 import WorkoutPlanDisplay from '@/components/ai/WorkoutPlanDisplay';
-import { AIProviderManager } from '@/services/AIProviderManager';
 
 export default function AICoachScreen() {
-  const [plan, setPlan] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+  const [workoutPlan, setWorkoutPlan] = useState<any>(null);
 
-  const handleGenerate = async (prefs: any) => {
+  const handleGenerate = async (preferences: WorkoutPreferences) => {
     setLoading(true);
-    const generated = await AIProviderManager.generateWorkoutPlan(
-      { userId: 'demo', fitnessLevel: 'intermediate', goals: ['Strength'] },
-      prefs
-    );
-    setPlan(generated);
-    setLoading(false);
+    setWorkoutPlan(null);
+    try {
+      const response = await fetch('/api/generate-workout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fitnessLevel: preferences.fitnessLevel,
+          goals: preferences.goals,
+          duration: parseInt(preferences.duration, 10),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const plan = await response.json();
+      setWorkoutPlan(plan);
+    } catch (error) {
+      console.error('Failed to generate workout plan:', error);
+      Alert.alert('Error', 'Could not generate a workout plan. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <PreferenceForm onSubmit={handleGenerate} loading={loading} />
-      {plan && <WorkoutPlanDisplay plan={plan} />}
-    </ThemedView>
+    <ScrollView style={styles.container}>
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title">AI Powered Coach</ThemedText>
+      </ThemedView>
+      <PreferenceForm onSubmit={handleGenerate} isLoading={loading} />
+      {loading && <ActivityIndicator size="large" style={{ marginTop: 20 }} />}
+      {workoutPlan && <WorkoutPlanDisplay plan={workoutPlan} />}
+    </ScrollView>
   );
 }
 
@@ -31,5 +53,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  titleContainer: {
+    marginBottom: 16,
   },
 });

@@ -1,27 +1,43 @@
-import { StyleSheet } from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
+import { ScrollView, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
+import { ExerciseCard, Exercise } from './ExerciseCard';
+
+export type WorkoutPlan = {
+  warmUp: Exercise[];
+  mainWorkout: Exercise[];
+  coolDown: Exercise[];
+};
 
 export type WorkoutPlanDisplayProps = {
-  plan: any;
+  plan: WorkoutPlan;
 };
 
 export default function WorkoutPlanDisplay({ plan }: WorkoutPlanDisplayProps) {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText style={styles.header}>Your Plan</ThemedText>
-      <ThemedText>{JSON.stringify(plan, null, 2)}</ThemedText>
-    </ThemedView>
+    <ScrollView style={styles.container}>
+      <ThemedText type="subtitle" style={styles.section}>Warm Up</ThemedText>
+      {plan.warmUp.map((ex, i) => (
+        <ExerciseCard key={`warm-${i}`} exercise={ex} index={i} />
+      ))}
+      <ThemedText type="subtitle" style={styles.section}>Main Workout</ThemedText>
+      {plan.mainWorkout.map((ex, i) => (
+        <ExerciseCard key={`main-${i}`} exercise={ex} index={i} />
+      ))}
+      <ThemedText type="subtitle" style={styles.section}>Cool Down</ThemedText>
+      {plan.coolDown.map((ex, i) => (
+        <ExerciseCard key={`cool-${i}`} exercise={ex} index={i} />
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16,
   },
-  header: {
-    fontSize: 18,
-    fontWeight: '600',
+  section: {
+    marginTop: 20,
     marginBottom: 8,
   },
 });

@@ -56,3 +56,9 @@ Join our community of developers creating universal apps.
 
 - [Architecture Guide](docs/ArchitectureGuide.md)
 - AI Coach and calendar examples under `app/(tabs)`
+
+### Environment Variables
+
+Create a `.env` file based on `.env.example` and provide API keys for OpenAI,
+Gemini and Perplexity along with `EXPO_PUBLIC_API_URL`. These values are loaded
+server-side via `dotenv`.
