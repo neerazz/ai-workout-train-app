@@ -1,7 +1,7 @@
+import { Calendar } from 'react-native-calendars';
 import { StyleSheet } from 'react-native';
 import { useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
-import FitnessCalendar from '@/components/calendar/FitnessCalendar';
 
 export default function CalendarScreen() {
   const [markedDates, setMarkedDates] = useState<{[date: string]: any}>({});
@@ -20,7 +20,14 @@ export default function CalendarScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <FitnessCalendar markedDates={markedDates} onDayPress={handleDayPress} />
+      <Calendar
+        onDayPress={handleDayPress}
+        markedDates={markedDates}
+        theme={{
+          selectedDayBackgroundColor: '#007AFF',
+          todayTextColor: '#007AFF',
+        }}
+      />
     </ThemedView>
   );
 }
