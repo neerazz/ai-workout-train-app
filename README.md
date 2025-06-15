@@ -55,3 +55,4 @@ Join our community of developers creating universal apps.
 ## Documentation
 
 - [Architecture Guide](docs/ArchitectureGuide.md)
+- AI Coach and calendar examples under `app/(tabs)`
