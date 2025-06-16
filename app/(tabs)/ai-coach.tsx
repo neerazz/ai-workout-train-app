@@ -5,15 +5,22 @@ import { ThemedText } from '@/components/ThemedText';
 import { PreferenceForm, WorkoutPreferences } from '@/components/ai/PreferenceForm';
 import WorkoutPlanDisplay from '@/components/ai/WorkoutPlanDisplay';
 import { generateWorkoutPlanAPI, WorkoutPreferencesWithProvider } from '@/services/workoutService';
+import { useWorkoutStore } from '@/store/workoutStore';
 
 export default function AICoachScreen() {
-  const { mutate: generatePlan, data: workoutPlan, isPending, isError, error } = useMutation({
-    mutationFn: generateWorkoutPlanAPI,
-  });
+  const { mutate: generatePlan, data: workoutPlan, isPending, isError, error } =
+    useMutation({
+      mutationFn: generateWorkoutPlanAPI,
+    });
+  const { setGeneratedPlan, generatedPlan } = useWorkoutStore();
 
   const handleGenerate = (preferences: WorkoutPreferences) => {
     const prefs: WorkoutPreferencesWithProvider = { ...preferences };
-    generatePlan(prefs);
+    generatePlan(prefs, {
+      onSuccess: (data) => {
+        setGeneratedPlan(data);
+      },
+    });
   };
 
   if (isError) {
@@ -27,7 +34,9 @@ export default function AICoachScreen() {
       </ThemedView>
       <PreferenceForm onSubmit={handleGenerate} isLoading={isPending} />
       {isPending && <ActivityIndicator size="large" style={{ marginTop: 20 }} />}
-      {workoutPlan && <WorkoutPlanDisplay plan={workoutPlan} />}
+      {(workoutPlan || generatedPlan) && (
+        <WorkoutPlanDisplay plan={workoutPlan ?? generatedPlan!} />
+      )}
     </ScrollView>
   );
 }
