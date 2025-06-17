@@ -1,9 +1,9 @@
-import { Calendar, DateObject } from 'react-native-calendars';
+import { Calendar, DateData } from 'react-native-calendars';
 import { StyleSheet } from 'react-native';
 
 export type FitnessCalendarProps = {
   markedDates: { [date: string]: any };
-  onDayPress: (day: DateObject) => void;
+  onDayPress: (day: DateData) => void;
 };
 
 export default function FitnessCalendar({ markedDates, onDayPress }: FitnessCalendarProps) {
